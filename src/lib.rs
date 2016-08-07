@@ -2,6 +2,7 @@ extern crate hyper;
 extern crate xml;
 pub mod abstractions;
 pub mod entities;
+pub mod services;
 mod util;
 
 use hyper::client::Client;
@@ -12,13 +13,14 @@ use std::str;
 use xml::writer::{EmitterConfig, XmlEvent};
 
 use abstractions::traits::Transaction;
-use util::xml::{start_element, end_element, write_value};
+use services::ServicesConfig;
+use util::xml::{start_element, end_element, maybe_write_value, write_value};
 
-pub fn connect<T: Transaction>(t: T) {
+pub fn connect<T: Transaction>(s: ServicesConfig, t: T) {
     let url = "https://cert.api2.heartlandportico.com\
                /Hps.Exchange.PosGateway\
                /PosGatewayService.asmx?wsdl";
-    let body = build_xml(t);
+    let body = build_xml(s, t);
 
     let client = Client::new();
     let builder = client.post(url)
@@ -51,7 +53,7 @@ pub fn connect<T: Transaction>(t: T) {
     }
 }
 
-pub fn build_xml<T: Transaction>(t: T) -> Vec<u8> {
+pub fn build_xml<T: Transaction>(s: ServicesConfig, t: T) -> Vec<u8> {
     let mut b = Vec::new();
 
     {
@@ -71,9 +73,17 @@ pub fn build_xml<T: Transaction>(t: T) -> Vec<u8> {
         start_element("Ver1.0", &mut w);
         start_element("Header", &mut w);
 
-        write_value("SecretAPIKey", &String::from("skapi_cert_MT2PAQB-9VQA5Z1mOXQbzZcH6O5PpdhjWtFhMBoL4A"), &mut w);
-        write_value("DeveloperID", &String::from("002914"), &mut w);
-        write_value("VersionNbr", &String::from("1983"), &mut w);
+        if let Some(secret_api_key) = s.secret_api_key {
+            write_value("SecretAPIKey", &secret_api_key.to_owned(), &mut w);
+        } else {
+            maybe_write_value("UserName", &s.username, &mut w);
+            maybe_write_value("Password", &s.password, &mut w);
+            maybe_write_value("SiteId", &s.site_id, &mut w);
+            maybe_write_value("DeviceId", &s.device_id, &mut w);
+            maybe_write_value("LicenseId", &s.license_id, &mut w);
+        }
+        maybe_write_value("DeveloperID", &s.developer_id, &mut w);
+        maybe_write_value("VersionNbr", &s.version_number, &mut w);
 
         end_element(&mut w); // Header
         start_element("Transaction", &mut w);

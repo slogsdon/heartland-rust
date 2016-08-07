@@ -35,11 +35,8 @@ impl Transaction for CardData {
         start_element("CardData", w);
 
         // ManualEntry
-        match self.manual_entry {
-            Some(ref me) => {
-                me.write_xml(w);
-            }
-            None => {}
+        if let Some(ref me) = self.manual_entry {
+            me.write_xml(w);
         }
 
         end_element(w); // CardData
@@ -63,7 +60,7 @@ impl Transaction for CreditSale {
             "N"
         });
         write_value("AllowDup", &allow_dup, w);
-        write_value("Amt", &String::from(self.amount), w);
+        write_value("Amt", &self.amount.to_owned(), w);
 
         // CardData
         self.card_data.write_xml(w);

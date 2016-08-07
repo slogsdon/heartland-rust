@@ -1,7 +1,10 @@
 extern crate heartland;
 use heartland::entities::credit::{CreditSale, CardData, ManualEntry};
+use heartland::services::ServicesConfig;
 
 fn main() {
+    let mut c = ServicesConfig::new();
+    c.secret_api_key = Some("");
     let t = CreditSale {
         allow_duplicates: true,
         amount: "6.00",
@@ -14,5 +17,5 @@ fn main() {
             }),
         },
     };
-    heartland::connect(t);
+    heartland::connect(c, t);
 }

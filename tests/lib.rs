@@ -2,9 +2,15 @@ extern crate heartland;
 
 use std::str;
 use heartland::entities::credit::{CreditSale, CardData, ManualEntry};
+use heartland::services::ServicesConfig;
 
 #[test]
 fn build_xml_credit_sale_success() {
+    let mut c = ServicesConfig::new();
+    c.secret_api_key = Some("skapi_cert_MT2PAQB-9VQA5Z1mOXQbzZcH6O5PpdhjWtFhMBoL4A");
+    c.developer_id = Some("002914");
+    c.version_number = Some("1983");
+
     let t = CreditSale {
         allow_duplicates: true,
         amount: "6.00",
@@ -17,6 +23,7 @@ fn build_xml_credit_sale_success() {
             }),
         },
     };
+
     let body = r#"<?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns="http://Hps.Exchange.PosGateway" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <soap:Body>
@@ -47,5 +54,6 @@ fn build_xml_credit_sale_success() {
     </PosRequest>
   </soap:Body>
 </soap:Envelope>"#;
-    assert_eq!(body, str::from_utf8(&heartland::build_xml(t)).unwrap())
+
+    assert_eq!(body, str::from_utf8(&heartland::build_xml(c, t)).unwrap())
 }
