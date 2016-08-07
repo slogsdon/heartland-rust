@@ -15,8 +15,9 @@ use abstractions::traits::Transaction;
 use util::xml::{start_element, end_element, write_value};
 
 pub fn connect<T: Transaction>(t: T) {
-    let url = "https://cert.api2.heartlandportico.com/Hps.Exchange.PosGateway/PosGatewayService.\
-               asmx?wsdl";
+    let url = "https://cert.api2.heartlandportico.com\
+               /Hps.Exchange.PosGateway\
+               /PosGatewayService.asmx?wsdl";
     let body = build_xml(t);
 
     let client = Client::new();
