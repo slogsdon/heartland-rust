@@ -6,12 +6,18 @@ use heartland::services::ServicesConfig;
 
 #[test]
 fn build_xml_credit_sale_success() {
-    let mut c = ServicesConfig::new();
-    c.secret_api_key = Some("skapi_cert_MT2PAQB-9VQA5Z1mOXQbzZcH6O5PpdhjWtFhMBoL4A");
-    c.developer_id = Some("002914");
-    c.version_number = Some("1983");
+    let c = ServicesConfig {
+        secret_api_key: Some("skapi_cert_MT2PAQB-9VQA5Z1mOXQbzZcH6O5PpdhjWtFhMBoL4A"),
+        developer_id: Some("002914"),
+        version_number: Some("1983"),
+        .. ServicesConfig::default()
+    };
 
-    let t = CreditSale {
+    assert_eq!(credit_sale_string_xml(), str::from_utf8(&heartland::build_xml(c, credit_sale_struct_xml())).unwrap())
+}
+
+fn credit_sale_struct_xml() -> CreditSale {
+    CreditSale {
         allow_duplicates: true,
         amount: "6.00",
         card_data: CardData {
@@ -22,9 +28,11 @@ fn build_xml_credit_sale_success() {
                 cvv: Some(String::from("123")),
             }),
         },
-    };
+    }
+}
 
-    let body = r#"<?xml version="1.0" encoding="utf-8"?>
+fn credit_sale_string_xml() -> &'static str {
+    r#"<?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns="http://Hps.Exchange.PosGateway" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <soap:Body>
     <PosRequest>
@@ -53,7 +61,5 @@ fn build_xml_credit_sale_success() {
       </Ver1.0>
     </PosRequest>
   </soap:Body>
-</soap:Envelope>"#;
-
-    assert_eq!(body, str::from_utf8(&heartland::build_xml(c, t)).unwrap())
+</soap:Envelope>"#
 }

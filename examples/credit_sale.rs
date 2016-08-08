@@ -3,8 +3,10 @@ use heartland::entities::credit::{CreditSale, CardData, ManualEntry};
 use heartland::services::ServicesConfig;
 
 fn main() {
-    let mut c = ServicesConfig::new();
-    c.secret_api_key = Some("");
+    let c = ServicesConfig {
+        secret_api_key: Some("skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A"),
+        .. ServicesConfig::default()
+    };
     let t = CreditSale {
         allow_duplicates: true,
         amount: "6.00",

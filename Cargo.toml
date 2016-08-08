@@ -6,4 +6,3 @@ authors = ["Shane Logsdon <shane@shanelogsdon.com>"]
 [dependencies]
 hyper  = "0.9.10"
 xml-rs = "0.3.4"
-#serde_xml = "0.8.0"

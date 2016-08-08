@@ -1,11 +1,12 @@
 extern crate xml;
 
-use std::io::Write;
-use xml::writer::EventWriter;
+use std::io::{Write};
+use xml::{EventWriter};
 
 use super::super::abstractions::traits::Transaction;
 use super::super::util::xml::{start_element, end_element, maybe_write_value, write_value};
 
+#[derive(Debug, Default)]
 pub struct ManualEntry {
     pub card_number: String,
     pub exp_month: Option<String>,
@@ -22,10 +23,11 @@ impl Transaction for ManualEntry {
         maybe_write_value("ExpYear", &self.exp_year, w);
         maybe_write_value("CVV2", &self.cvv, w);
 
-        end_element(w); // ManualEntry
+        end_element(w);
     }
 }
 
+#[derive(Debug, Default)]
 pub struct CardData {
     pub manual_entry: Option<ManualEntry>,
 }
@@ -34,15 +36,15 @@ impl Transaction for CardData {
     fn write_xml<W: Write>(&self, w: &mut EventWriter<W>) {
         start_element("CardData", w);
 
-        // ManualEntry
         if let Some(ref me) = self.manual_entry {
             me.write_xml(w);
         }
 
-        end_element(w); // CardData
+        end_element(w);
     }
 }
 
+#[derive(Debug, Default)]
 pub struct CreditSale {
     pub allow_duplicates: bool,
     pub amount: &'static str,
@@ -61,8 +63,6 @@ impl Transaction for CreditSale {
         });
         write_value("AllowDup", &allow_dup, w);
         write_value("Amt", &self.amount.to_owned(), w);
-
-        // CardData
         self.card_data.write_xml(w);
 
         end_element(w); // Block1
