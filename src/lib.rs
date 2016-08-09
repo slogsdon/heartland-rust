@@ -1,4 +1,5 @@
 extern crate hyper;
+extern crate serde_xml;
 extern crate xml;
 pub mod abstractions;
 pub mod entities;
@@ -38,7 +39,8 @@ pub fn connect<T: Transaction>(s: ServicesConfig, t: T) {
             let _ = res.read_to_string(&mut buf)
                 .map_err(|_| println!("Failed to read response body"))
                 .map(|_| {
-                    println!("code: {}\nbody: {:?}", res.status, buf);
+                    let response: SoapEnvelope<T> = serde_xml::from_str(buf.as_str()).unwrap();
+                    println!("code: {}\nbody: {{:?}}", res.status);
                 });
         }
         _ => {
@@ -56,21 +58,14 @@ pub fn build_xml<T: Transaction>(s: ServicesConfig, t: T) -> Vec<u8> {
             .perform_indent(true)
             .create_writer(&mut b);
 
+        let header = Header::from_services_config(s);
+
         SoapEnvelope {
             header: None,
             body: Some(SoapBody {
                 contents: Some(PosRequest {
                     version: Some(Ver10 {
-                        header: Some(Header {
-                            device_id: s.device_id,
-                            developer_id: s.developer_id,
-                            username: s.username,
-                            site_id: s.site_id,
-                            license_id: s.license_id,
-                            version_number: s.version_number,
-                            secret_api_key: s.secret_api_key,
-                            password: s.password,
-                        }),
+                        header: Some(header),
                         transaction: Some(t),
                     })
                 })
